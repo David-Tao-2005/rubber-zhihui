@@ -239,5 +239,65 @@ function showSettings() {
   panel.querySelector('#save-settings').addEventListener('click', () => { const settings = Object.fromEntries(['market-alert','source-display','safety-alert'].map((id) => [id, panel.querySelector(`#${id}`).checked])); localStorage.setItem('rubberZhihuiSettings', JSON.stringify(settings)); panel.querySelector('#settings-status').textContent = '✓ 设置已保存到当前设备'; });
 }
 
+/* Upgrade: notification centre, production-style preferences, and agricultural AI answer format. */
+function setupNotifications() {
+  const button = document.querySelector('.icon-button');
+  if (!button) return;
+  button.addEventListener('click', () => {
+    const panel = openPanel('通知中心', `
+      <p class="panel-note">汇总行情、农事、数据与系统提醒；正式上线后由后端按用户、地块和角色推送。</p>
+      <div id="notification-list" class="notification-list">
+        <article class="notification unread"><span>行情</span><div><b>国内胶价波动提醒</b><p>RU 主力日内波动达到演示阈值，请结合库存与订单复核采购节奏。</p><small>刚刚</small></div></article>
+        <article class="notification unread"><span>农事</span><div><b>雨后胶园巡查建议</b><p>关注割面受雨、胶杯遮雨、排水沟和叶部病害情况。</p><small>今天 08:00</small></div></article>
+        <article class="notification"><span>数据</span><div><b>知识库更新提示</b><p>企业标准与专家资料更新后，AI 回答将优先引用最新有效版本。</p><small>昨天</small></div></article>
+      </div>
+      <button id="read-all-notifications" class="primary-button">全部标记为已读</button>`);
+    panel.querySelector('#read-all-notifications').addEventListener('click', (event) => {
+      panel.querySelectorAll('.notification').forEach((item) => item.classList.remove('unread'));
+      event.currentTarget.textContent = '✓ 已全部标记为已读';
+      event.currentTarget.disabled = true;
+    });
+  });
+}
+
+function showSettings() {
+  const panel = openPanel('系统设置', `
+    <p class="panel-note">设置仅保存在当前设备。真实推送、账号同步及权限校验需要后端支持。</p>
+    <h3 class="settings-group">提醒与安全</h3>
+    <div class="setting-toggle"><div><b>行情价格提醒</b><small>价格波动达到设定阈值时提醒</small></div><label class="switch"><input id="market-alert" type="checkbox" checked><i></i></label></div>
+    <div class="setting-toggle"><div><b>农事与天气提醒</b><small>降雨、高温、台风和关键农事节点提醒</small></div><label class="switch"><input id="weather-alert" type="checkbox" checked><i></i></label></div>
+    <div class="setting-toggle"><div><b>病害识别安全提醒</b><small>高风险结果提示专家复核</small></div><label class="switch"><input id="safety-alert" type="checkbox" checked><i></i></label></div>
+    <h3 class="settings-group">显示与数据</h3>
+    <div class="setting-toggle"><div><b>AI 回答引用来源</b><small>显示知识库版本、数据日期和引用依据</small></div><label class="switch"><input id="source-display" type="checkbox" checked><i></i></label></div>
+    <div class="setting-toggle"><div><b>默认区域</b><small>用于天气、农事和本地行情筛选</small></div><select id="default-region" class="settings-select"><option>海南</option><option>云南</option><option>广东</option><option>广西</option></select></div>
+    <div class="setting-toggle"><div><b>清除本机演示数据</b><small>删除本设备保存的问答历史和偏好设置</small></div><button id="clear-local-data" class="minor-button">清除</button></div>
+    <button id="save-settings" class="primary-button">保存设置</button><p id="settings-status" class="save-status"></p>`);
+  const keys = ['market-alert','weather-alert','safety-alert','source-display'];
+  const saved = JSON.parse(localStorage.getItem('rubberZhihuiSettings') || '{}');
+  keys.forEach((id) => { if (id in saved) panel.querySelector(`#${id}`).checked = saved[id]; });
+  if (saved.region) panel.querySelector('#default-region').value = saved.region;
+  panel.querySelector('#save-settings').addEventListener('click', () => {
+    const settings = Object.fromEntries(keys.map((id) => [id, panel.querySelector(`#${id}`).checked]));
+    settings.region = panel.querySelector('#default-region').value;
+    localStorage.setItem('rubberZhihuiSettings', JSON.stringify(settings));
+    panel.querySelector('#settings-status').textContent = '✓ 设置已保存到当前设备';
+  });
+  panel.querySelector('#clear-local-data').addEventListener('click', () => {
+    localStorage.removeItem('rubberZhihuiHistory'); localStorage.removeItem('rubberZhihuiSettings');
+    panel.querySelector('#settings-status').textContent = '✓ 本机演示数据已清除';
+  });
+}
+
+function mockAnswer(question) {
+  const source = '资料依据：演示知识库；正式系统应引用企业有效标准、专家审核资料与带日期的数据源。';
+  if (/雨|割胶|降雨|天气/.test(question)) return `【初步结论】雨季割胶应以“割面干燥、短时无雨窗口、排水通畅”为前提，不建议在割面明显潮湿或降雨风险高时强行作业。<br><br>【判断依据】需同时核对未来 6–12 小时降雨、前一日降雨量、胶树树龄与长势、割制、割面状态、胶杯遮雨和病害发生情况；单凭天气图标不能替代地块巡查。<br><br>【建议动作】1. 清晨巡查割面与胶杯；2. 优先安排排水良好、遮雨条件完善地块；3. 雨后记录产胶、凝胶及病害变化；4. 出现连续阴雨或异常落叶时启动农技复核。<br><br>【风险边界】药剂、防治剂量和割胶制度必须按当地农技规程及专家意见执行。<br><br>${source}`;
+  if (/病|白粉|炭疽|叶/.test(question)) return `【初步研判】病虫害问题应先区分发生部位、面积、扩散速度和气象条件，图片识别只能作为初筛，不应直接作为施药依据。<br><br>【田间核查】记录叶片正反面症状、嫩梢/树干/割面是否受害、受害株比例、近 7 天降雨湿度及是否有相邻地块扩散。<br><br>【处置流程】1. 拍摄清晰近景与全株照片；2. 标记地块和受害范围；3. 依据当地植保规程制定综合防治；4. 对高风险或快速扩散情况提交农技专家复核。<br><br>【安全提示】不推荐在未确诊病因前使用具体农药或剂量。<br><br>${source}`;
+  if (/DRC|干胶|门尼|杂质|品质|定级|收购/.test(question)) return `【质量定级框架】收购与定价不能只看单一指标，应以抽样代表性、检测可追溯性、企业标准与当日价格规则共同决定。<br><br>【重点核验】干胶含量（DRC）、杂质、门尼黏度、初始塑性、挥发分及外观状态；同时记录样品批次、抽样位置、仪器校准、检测人员和复检结果。<br><br>【建议动作】1. 先核对检测单与标准版本；2. 将不合格/临界指标触发复检；3. 根据等级升贴水、运输和水分损耗计算收购价；4. 对争议批次保留样品与影像证据。<br><br>【风险边界】最终等级与结算价应由授权质检人员按企业规则确认。<br><br>${source}`;
+  if (/国际|泰国|RSS3|TSR20|新加坡|美元|汇率/.test(question)) return `【国际市场研判】进口成本需从外盘、升贴水、汇率、海运费和到港周期整体计算，不能只依据单日盘面报价。<br><br>【观察变量】泰国、印尼、马来西亚主产区天气与原料胶价格；SICOM 相关合约；美元/人民币汇率；原油、海运费、港口库存及下游订单。<br><br>【建议动作】按采购计划分批锁价，分别测算人民币完税成本和汇率敏感性；设置报价有效期、到港时间和基差波动预警。<br><br>【风险边界】国际行情具波动性，所有价格判断必须标注数据日期、币种和交割口径。<br><br>${source}`;
+  if (/供需|库存|产量|消费|轮胎|行情|价格|采购/.test(question)) return `【供需与行情研判】建议从供应、需求、库存三端交叉验证，不以单一价格涨跌直接推导趋势。<br><br>【供应端】关注主产区开割节奏、降雨与灾害、原料胶价格、出口节奏。<br>【需求端】关注轮胎开工、汽车产销、替换胎需求、加工企业订单。<br>【库存端】关注青岛、保税区、交易所库存及去化速度。<br><br>【建议动作】当库存累积且下游开工走弱时，采购以分批和控制库存为主；低库存叠加供应扰动时，提高补库频率并设置价格预警。<br><br>【数据缺口】请补充目标品种、区域、采购周期和当前库存，才能给出针对性建议。<br><br>${source}`;
+  return `【问题理解】该问题可从种植管理、品质标准、加工利用或市场经营四个维度进一步拆解。<br><br>【建议提供的信息】橡胶品种/胶种、所在区域与地块条件、发生时间、检测或图片资料、现有标准版本、目标（种植、收购、加工或采购）。<br><br>【严谨原则】系统上线后将先检索企业知识库和实时业务数据，再给出结论、依据、建议动作、风险提示与可追溯来源；高风险农业建议应由农技专家复核。<br><br>${source}`;
+}
+
+setupNotifications();
 navItems.forEach((item) => item.addEventListener('click', () => go(item.dataset.route)));
 go('home');

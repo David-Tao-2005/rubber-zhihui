@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#0c735b" />
+    <title>橡胶智汇</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div class="brand-mark">橡</div>
+        <div>
+          <p class="eyebrow">NATURAL RUBBER INTELLIGENCE</p>
+          <h1>橡胶智汇</h1>
+        </div>
+        <button class="icon-button" aria-label="通知">🔔</button>
+      </header>
+
+      <main id="main-content"></main>
+
+      <nav class="bottom-nav" aria-label="主导航">
+        <button data-route="home" class="nav-item active"><span>⌂</span><b>首页</b></button>
+        <button data-route="market" class="nav-item"><span>↗</span><b>行情</b></button>
+        <button data-route="assistant" class="nav-item ai-nav"><span>✦</span><b>AI 助手</b></button>
+        <button data-route="diagnosis" class="nav-item"><span>⌾</span><b>识别</b></button>
+        <button data-route="profile" class="nav-item"><span>◉</span><b>我的</b></button>
+      </nav>
+    </div>
+
+    <template id="home-template">
+      <section class="hero">
+        <div>
+          <p>海南 · 儋州</p>
+          <h2>28° <small>多云</small></h2>
+          <span>适宜割胶 · 午后有阵雨</span>
+        </div>
+        <div class="weather-icon">☀</div>
+      </section>
+      <section class="alert-card"><span>!</span><div><b>今日经营提示</b><p>沪胶主力价格上行，建议关注现货采购节奏。</p></div><button data-route="market">查看</button></section>
+      <section class="section-heading"><div><p class="eyebrow">SMART SERVICES</p><h2>橡胶产业服务</h2></div><button data-route="assistant" class="text-button">问问 AI →</button></section>
+      <section class="feature-grid">
+        <button class="feature-card green" data-route="market"><i>↗</i><b>产业行情</b><span>价格走势 · AI 解读</span></button>
+        <button class="feature-card gold" data-route="quality"><i>⌁</i><b>品质分析</b><span>检测指标 · 定级建议</span></button>
+        <button class="feature-card teal" data-route="planting"><i>♧</i><b>种植管理</b><span>割胶 · 施肥 · 病害</span></button>
+        <button class="feature-card coral" data-route="diagnosis"><i>⌾</i><b>病虫害识别</b><span>拍照 · 防治方案</span></button>
+      </section>
+      <section class="quick-panel">
+        <button data-route="standards"><span>▤</span>行业标准</button>
+        <button data-route="trace"><span>⌘</span>收购溯源</button>
+        <button data-route="processing"><span>◒</span>橡胶的加工利用</button>
+      </section>
+      <section class="data-banner">
+        <div><p class="eyebrow">YOUR DATA, YOUR INSIGHT</p><h2>把每一批橡胶<br/>变成可信数据</h2><button data-route="trace" class="light-button">进入批次管理</button></div>
+        <div class="droplet">◒</div>
+      </section>
+    </template>
+
+    <template id="market-template">
+      <section class="page-title"><p class="eyebrow">MARKET INTELLIGENCE</p><h2>产业行情</h2><p>行情数据可在后台替换为实时接口数据</p></section>
+      <div class="segmented"><button class="selected">国内行情</button><button>国际行情</button><button>供需数据</button></div>
+      <section class="market-main-card"><div class="row-between"><div><p>上海期货 · RU 主力</p><h2>14,860 <small>元/吨</small></h2></div><span class="up">+1.82%</span></div><div class="chart"><i style="height:32%"></i><i style="height:48%"></i><i style="height:43%"></i><i style="height:58%"></i><i style="height:51%"></i><i style="height:74%"></i><i style="height:84%"></i></div><div class="chart-label"><span>周一</span><span>周三</span><span>周五</span><span>今日</span></div></section>
+      <section class="metric-grid"><article><span>云南全乳胶</span><b>14,550</b><small class="up">+0.69%</small></article><article><span>海南浓缩乳胶</span><b>11,280</b><small class="down">-0.31%</small></article><article><span>青岛保税库存</span><b>47.6 万吨</b><small class="up">+2.1%</small></article></section>
+      <section class="insight"><div class="spark">✦</div><div><b>AI 行情解读</b><p>短期受供应扰动与宏观情绪支撑，价格偏强震荡；请结合实际库存制定采购策略。</p><button data-route="assistant" class="text-button">追问分析 →</button></div></section>
+    </template>
+
+    <template id="assistant-template">
+      <section class="page-title compact"><p class="eyebrow">RUBBER COPILOT</p><h2>橡胶 AI 助手</h2><p>基于企业知识库、行情与业务数据生成回答</p></section>
+      <section id="chat-messages" class="chat-messages"><article class="bubble assistant-bubble"><b>橡胶智汇</b><p>您好，我可以协助解读橡胶行情、种植管理、质量标准和收购数据。请问您想了解什么？</p></article></section>
+      <section class="suggestion-wrap"><p>你可以这样问</p><div class="suggestions"><button>雨季怎样安排割胶？</button><button>这批胶的定级与收购价？</button><button>本周胶价走势如何？</button><button>白粉病如何防治？</button></div></section>
+      <form id="chat-form" class="chat-input"><input id="chat-text" autocomplete="off" placeholder="输入您的橡胶行业问题" /><button type="submit">发送</button></form>
+    </template>
+
+    <template id="quality-template">
+      <section class="page-title"><p class="eyebrow">QUALITY ANALYTICS</p><h2>品质智能分析</h2><p>录入检测数据，快速生成批次质量建议</p></section>
+      <section class="quality-form card"><label>批次编号<input value="HN-20260811-017" /></label><div class="form-grid"><label>干胶含量 DRC<input type="number" value="61.8" /></label><label>杂质含量<input type="number" value="0.04" /></label><label>门尼黏度<input type="number" value="72" /></label><label>初始塑性 P0<input type="number" value="38" /></label></div><button id="analyse-quality" class="primary-button">生成分析建议</button></section>
+      <section id="quality-result" class="result-card hidden"></section>
+      <section class="info-card"><b>说明</b><p>此处为演示规则。正式上线时应由企业标准、国标及检测设备数据共同确定定级与定价。</p></section>
+    </template>
+
+    <template id="diagnosis-template">
+      <section class="page-title"><p class="eyebrow">VISION DIAGNOSIS</p><h2>病虫害识别</h2><p>上传叶片、树干或割面照片，获取初步识别建议</p></section>
+      <section class="upload-card"><div id="image-preview" class="image-preview"><span>⌾</span><b>拍照或上传图片</b><p>建议在自然光下拍摄清晰近景</p></div><input id="image-input" type="file" accept="image/*" hidden /><button id="upload-trigger" class="primary-button">选择图片</button></section>
+      <section id="diagnosis-result" class="result-card"><div class="empty"><span>◌</span><p>上传图片后开始识别</p></div></section>
+      <section class="info-card"><b>安全提示</b><p>识别结果仅作田间初筛。涉及药剂、病情扩散或生产安全时，请由农技专家复核。</p></section>
+    </template>
+
+    <template id="profile-template">
+      <section class="profile-hero"><div class="avatar">橡</div><div><h2>橡胶产业服务中心</h2><p>企业管理员 · 海南示范基地</p></div><span>›</span></section>
+      <section class="profile-stats"><article><b>12</b><span>管理地块</span></article><article><b>86</b><span>收购批次</span></article><article><b>37</b><span>AI 问答</span></article></section>
+      <section class="settings-list"><button><span>◴</span>AI 问答历史<i>›</i></button><button><span>▤</span>数据导入与管理<i>›</i></button><button><span>♙</span>成员与权限<i>›</i></button><button><span>⚙</span>系统设置<i>›</i></button></section>
+      <section class="info-card"><b>下一步：连接真实数据</b><p>在管理后台导入 Excel、PDF、图片与标准资料，即可替换当前演示内容并建设企业知识库。</p></section>
+    </template>
+
+    <template id="placeholder-template">
+      <section class="page-title"><p class="eyebrow">COMING SOON</p><h2 id="placeholder-title">功能建设中</h2><p>该模块的页面骨架与数据接口已预留，下一步可按业务流程补充。</p></section>
+      <section class="empty-page"><span>◒</span><h3>等待导入企业数据</h3><p>先完成产品框架，再通过后台导入标准、批次、行情或地块资料。</p><button data-route="assistant" class="primary-button">咨询 AI 助手</button></section>
+    </template>
+    <style>
+      .login-panel{padding:28px 20px 22px;border-radius:22px;background:linear-gradient(155deg,#edf9f3,#fff)}
+      .login-badge{width:54px;height:54px;display:grid;place-items:center;border-radius:17px;background:linear-gradient(145deg,#16a77c,#07614a);color:#fff;font-size:25px;font-weight:800;margin-bottom:16px}
+      .login-panel h2{font-size:25px;margin:3px 0}.login-subtitle{font-size:13px;color:#6a827a;margin:4px 0 22px}
+      .login-form{display:grid;gap:15px}.login-form label{display:grid;gap:6px;color:#587267;font-size:13px;font-weight:700}.login-form input{width:100%;border:1px solid #d8e7df;border-radius:11px;padding:12px;font:inherit;color:#17362e;background:#fff}
+      .code-row{display:flex;gap:8px}.code-row input{min-width:0}.code-row button{white-space:nowrap;border:0;border-radius:10px;padding:0 12px;background:#e8f5ef;color:#0b735b;font-weight:700}.code-row button:disabled{opacity:.55}
+      .login-message{margin:0;color:#71857c;font-size:12px}.login-message.error{color:#c34b42}.login-message.success{color:#087557;font-weight:700}.logged-user{border-radius:20px;background:linear-gradient(110deg,#0d735a,#28a987);padding:22px;color:white;display:flex;gap:13px;align-items:center}.logged-user h2{margin:0;font-size:18px}.logged-user p{margin:4px 0 0;font-size:12px;opacity:.78}.logout-button{margin-left:auto;border:1px solid rgba(255,255,255,.6);border-radius:9px;background:transparent;color:#fff;padding:7px 10px}
+      .demo-login-button{border:0;background:transparent;color:#0b735b;font-weight:700;font-size:13px;padding:2px}
+    </style>
+    <style>
+      .feature-panel{position:fixed;z-index:30;inset:0;display:grid;align-items:end}.panel-mask{position:absolute;inset:0;background:rgba(9,39,30,.38)}.panel-sheet{position:relative;max-height:82vh;overflow:auto;background:#fff;border-radius:25px 25px 0 0;padding:21px 20px 34px;box-shadow:0 -10px 35px rgba(0,0,0,.14)}.panel-sheet header{display:flex;align-items:start;justify-content:space-between;margin-bottom:13px}.panel-sheet h2{margin:0;font-size:21px}.panel-sheet header button{border:0;background:#edf5f0;color:#35685a;border-radius:50%;font-size:25px;width:32px;height:32px;line-height:28px}.panel-note{font-size:13px;color:#6d837a;margin:0 0 15px}.panel-empty{padding:22px 12px;text-align:center;color:#82968e;font-size:13px;background:#f6f9f7;border-radius:13px}.history-list{padding:0;margin:0;list-style:none}.history-list li{padding:13px 4px;border-bottom:1px solid #e7eee9;display:grid;gap:3px}.history-list b{font-size:14px}.history-list span{font-size:11px;color:#81948c}.upload-zone{display:grid;place-items:center;text-align:center;gap:6px;border:1.5px dashed #9fcfbb;background:#f2faf5;border-radius:16px;padding:26px 12px;color:#2c705b}.upload-zone span{font-size:28px}.upload-zone small{color:#789087;font-size:11px}.file-list{margin:12px 0;display:grid;gap:8px}.file-row{display:flex;gap:9px;align-items:center;padding:10px;border-radius:10px;background:#f5f8f6}.file-row>span{font-size:20px;color:#0b735b}.file-row b,.file-row small{display:block}.file-row small{font-size:11px;color:#7a9087}.success-banner{background:#e5f6ec;color:#087557;border-radius:10px;padding:10px;font-size:12px}.member-list{display:grid;gap:9px;margin-bottom:14px}.member-row{display:flex;gap:10px;align-items:center;padding:11px;background:#f5f8f6;border-radius:12px}.member-row b,.member-row small{display:block}.member-row small{font-size:11px;color:#789087}.member-avatar{display:grid;place-items:center;width:35px;height:35px;border-radius:50%;background:#d9f2e7;color:#0b735b;font-weight:800}.member-avatar.alt{background:#fff0d3;color:#bd7a18}.member-avatar.new{background:#e2e0ff;color:#6255b1}.inline-form{display:grid;grid-template-columns:1fr 112px auto;gap:7px}.inline-form input,.inline-form select{min-width:0;border:1px solid #d9e7df;border-radius:9px;padding:9px;font:inherit;font-size:12px}.inline-form button{border:0;border-radius:9px;background:#0b735b;color:#fff;padding:0 11px;font-weight:700}.setting-toggle{display:flex;justify-content:space-between;gap:14px;padding:14px 0;border-bottom:1px solid #e8efea}.setting-toggle b,.setting-toggle small{display:block}.setting-toggle small{font-size:11px;color:#789087;margin-top:2px}.switch{position:relative;width:43px;height:25px;flex:0 0 auto}.switch input{display:none}.switch i{position:absolute;inset:0;border-radius:30px;background:#c7d6ce}.switch i:after{content:'';position:absolute;width:19px;height:19px;left:3px;top:3px;border-radius:50%;background:#fff;transition:.2s}.switch input:checked+i{background:#0b735b}.switch input:checked+i:after{transform:translateX(18px)}.panel-sheet .primary-button{margin-top:17px}.save-status{text-align:center;color:#087557;font-size:12px;margin:8px 0 0}
+      .module-list{display:grid;gap:12px;text-align:left}.module-list article{padding:15px;border-radius:14px;background:#fff;box-shadow:0 4px 16px rgba(21,61,49,.08)}.module-list article b{font-size:16px}.module-list article p{margin:5px 0 11px;color:#688077;font-size:13px}.module-list article button,.trace-form button{border:0;border-radius:9px;background:#e7f5ed;color:#087557;padding:8px 12px;font-weight:700}.module-list article button:disabled{opacity:.7}.trace-form{text-align:left}.trace-form p{font-size:13px;color:#6b8278}.trace-form>div{display:flex;gap:8px}.trace-form input{min-width:0;flex:1;border:1px solid #d8e7df;border-radius:9px;padding:10px;font:inherit}.trace-result{margin-top:14px;padding:14px;border-radius:13px;background:#f2f8f4;color:#3c6658;font-size:13px}.trace-result ol{padding-left:21px;margin:8px 0 0}.trace-result li{margin:5px 0}.standard-summary,.research-card{padding:14px;border-radius:12px;background:#f3f8f4;color:#44675b}.standard-summary p,.research-card p{margin:5px 0 0;font-size:13px}.research-card{margin-bottom:10px}
+      .ai-capability{display:flex;gap:10px;align-items:start;padding:12px 13px;margin:8px 0 13px;border-radius:13px;background:linear-gradient(100deg,#e7f6ee,#f7faf4);font-size:12px;color:#477265}.ai-capability b{color:#087557;white-space:nowrap}.ai-capability span{line-height:1.55}
+    </style>
+    <script src="app.js"></script>
+  </body>
+</html>

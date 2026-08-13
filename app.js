@@ -298,6 +298,40 @@ function mockAnswer(question) {
   return `【问题理解】该问题可从种植管理、品质标准、加工利用或市场经营四个维度进一步拆解。<br><br>【建议提供的信息】橡胶品种/胶种、所在区域与地块条件、发生时间、检测或图片资料、现有标准版本、目标（种植、收购、加工或采购）。<br><br>【严谨原则】系统上线后将先检索企业知识库和实时业务数据，再给出结论、依据、建议动作、风险提示与可追溯来源；高风险农业建议应由农技专家复核。<br><br>${source}`;
 }
 
+/* Quality-analysis upgrade: transparent rule checks plus per-indicator help.
+   Thresholds below are DEMO configuration only and must be replaced with the
+   partner's approved product-grade / procurement-standard rule table. */
+function setupQuality() {
+  const form = main.querySelector('.quality-form');
+  const fields = [...form.querySelectorAll('input[type="number"]')];
+  const definitions = [
+    { name:'干胶含量 DRC', unit:'%', meaning:'样品中实际橡胶干物质所占比例。它直接影响按湿胶称重折算后的有效胶量及收购结算。', effect:'数值偏低通常意味着水分比例较高，单位湿重可折算的干胶减少；异常波动应复核抽样、称量和干燥方法。', rule:'演示预警：低于 60% 提示复检。' },
+    { name:'杂质含量', unit:'%', meaning:'橡胶中泥沙、树皮、纤维及其他非橡胶异物的比例，是清洁度与加工风险的重要指标。', effect:'数值升高会增加过滤、清洗和加工损耗，并可能影响制品均匀性；应核查采收、储运和现场卫生。', rule:'演示预警：高于 0.05% 提示复检。' },
+    { name:'门尼黏度', unit:'MU', meaning:'反映橡胶黏弹性和加工流动性的常用指标，用于判断混炼、挤出、压延等加工适配性。', effect:'偏高可能使加工流动性下降；偏低可能影响强度或批次稳定性。必须按具体胶种、产品配方和企业标准判定。', rule:'演示关注区间：60–80 MU。' },
+    { name:'初始塑性 P0', unit:'—', meaning:'表示生胶初始塑性水平，是评估原料橡胶物理性能和批次稳定性的基础指标之一。', effect:'较低值可能提示原料性能或储存、加工过程存在波动；需与塑性保持率、挥发分等指标联合判断。', rule:'演示预警：低于 35 提示复检。' }
+  ];
+  fields.forEach((field, index) => {
+    const label = field.closest('label');
+    if (!label || label.querySelector('.quality-help')) return;
+    const help = document.createElement('button');
+    help.type = 'button'; help.className = 'quality-help'; help.textContent = '?'; help.setAttribute('aria-label', `${definitions[index].name} 指标说明`);
+    help.addEventListener('click', () => openPanel(definitions[index].name, `<div class="indicator-detail"><p><b>指标含义：</b>${definitions[index].meaning}</p><p><b>数值变化的影响：</b>${definitions[index].effect}</p><p><b>系统演示规则：</b>${definitions[index].rule}</p><p class="panel-note">正式项目应以合作方确认的胶种、等级、检测方法和标准版本为准，不能直接采用演示阈值。</p></div>`));
+    label.prepend(help);
+  });
+  main.querySelector('#analyse-quality').addEventListener('click', () => {
+    const [drc, impurity, mooney, p0] = fields.map((item) => Number(item.value));
+    const issues = [];
+    if (!Number.isFinite(drc) || !Number.isFinite(impurity) || !Number.isFinite(mooney) || !Number.isFinite(p0)) { issues.push('存在未填写或非数字检测值'); }
+    if (drc < 60) issues.push(`DRC ${drc.toFixed(1)}% 低于演示复检线 60%`);
+    if (impurity > 0.05) issues.push(`杂质 ${impurity.toFixed(3)}% 高于演示复检线 0.05%`);
+    if (mooney < 60 || mooney > 80) issues.push(`门尼黏度 ${mooney.toFixed(0)} 超出演示关注区间 60–80`);
+    if (p0 < 35) issues.push(`初始塑性 P0 ${p0.toFixed(0)} 低于演示复检线 35`);
+    const status = issues.length ? '建议复检后分级收购' : '指标处于演示关注范围，可进入标准审核';
+    const result = main.querySelector('#quality-result'); result.classList.remove('hidden');
+    result.innerHTML = `<h3>初步质量建议：${status}</h3><div class="quality-summary"><b>检测概览</b><p>DRC ${drc}% · 杂质 ${impurity}% · 门尼 ${mooney} MU · P0 ${p0}</p><b>规则检查</b>${issues.length ? `<ul>${issues.map((item) => `<li>${item}</li>`).join('')}</ul>` : '<p>未触发当前演示阈值。</p>'}<b>下一步</b><p>核对样品代表性、检测仪器校准、检测单和适用的企业标准版本；临界或异常批次应复检并由授权质检人员确认最终等级与结算价。</p><p class="result-disclaimer">本结果由可审计的演示规则生成，不构成国家标准、交易结算或生产处置结论。</p></div>`;
+  });
+}
+
 setupNotifications();
 navItems.forEach((item) => item.addEventListener('click', () => go(item.dataset.route)));
 go('home');

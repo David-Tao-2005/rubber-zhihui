@@ -17,6 +17,7 @@ function go(route) {
   setActive(route);
   if (titles[route]) document.querySelector('#placeholder-title').textContent = titles[route];
   if (titles[route]) setupModule(route);
+  if (route === 'standards') setupStandardsModule();
   if (route === 'assistant') setupChat();
   if (route === 'home') setupHomeWeather();
   if (route === 'market') setupMarket();
@@ -238,6 +239,34 @@ function setupModule(route) {
   area.querySelector('#trace-search')?.addEventListener('click', () => { const code = main.querySelector('#trace-number').value.trim() || 'HN-20260811-017'; const result = main.querySelector('#trace-result'); result.innerHTML = `<b>批次 ${escapeHtml(code)}</b><ol><li>08:20 · 儋州示范基地 · 原料胶入库</li><li>10:40 · 完成 DRC、杂质与门尼黏度检测</li><li>14:10 · 判定待复核，进入加工排产</li></ol>`; });
   area.querySelector('#research-search')?.addEventListener('click', () => openPanel('科研成果库', '<div class="research-card"><b>雨季橡胶园综合管理技术</b><p>分类：栽培管理 · 已纳入企业知识库</p></div><div class="research-card"><b>原料胶质量稳定性提升方案</b><p>分类：加工与品控 · 待专家审核</p></div>'));
   area.querySelector('#product-catalog')?.addEventListener('click', () => openPanel('橡胶制品应用目录', '<div class="research-card"><b>轮胎与橡胶配件</b><p>交通运输、工程机械等应用场景。</p></div><div class="research-card"><b>工业橡胶制品</b><p>胶管、胶带、密封件、减震件等。</p></div><div class="research-card"><b>医用与生活用品</b><p>乳胶手套、乳胶丝、胶粘剂等。</p></div>'));
+}
+
+function setupStandardsModule() {
+  const area = main.querySelector('.empty-page');
+  if (!area) return;
+  const categories = [
+    { code:'01', name:'基础与通用', tag:'通用基础', topics:'术语规范、分类分级、标准化通则', scope:'为种植、加工、检验与贸易提供统一术语、分类口径和通用要求。' },
+    { code:'02', name:'种质资源与品种种苗', tag:'产前', topics:'种质收集保存、鉴定评价、品种选育、种苗繁育与质量', scope:'覆盖种质资源描述、引种保存、品种试验审定、苗圃与种苗质量管理。' },
+    { code:'03', name:'栽培管理与割胶技术', tag:'种植生产', topics:'产地环境、水肥管理、生态栽培、营养诊断、割胶规程', scope:'覆盖建园、行间管理、施肥灌溉、割制与割胶作业等生产环节。' },
+    { code:'04', name:'植物保护与农业投入品', tag:'植保安全', topics:'检疫鉴定、病虫监测、风险评估、绿色防控、肥料农药', scope:'规范病虫害识别、监测预警、综合防控，以及肥料、农药等投入品使用。' },
+    { code:'05', name:'设施设备与机械化', tag:'装备', topics:'栽培设备、植保装备、加工设备、维护与安全', scope:'覆盖胶园生产、植物保护、采收和初加工所需设施装备。' },
+    { code:'06', name:'采后处理与初加工', tag:'加工', topics:'胶乳采后处理、浓缩胶乳、标准胶、橡胶木初加工', scope:'覆盖鲜胶乳收集、保鲜、运输、初加工及橡胶木初加工。' },
+    { code:'07', name:'产品质量与检验检测', tag:'质量控制', topics:'取样制样、成分测定、性能检验、质量分析、进口检验', scope:'覆盖原料胶、胶乳及产品的质量指标、检验方法与判定依据。' },
+    { code:'08', name:'包装贮运与贸易流通', tag:'流通', topics:'包装标识、仓储运输、产品追溯、电商流通', scope:'覆盖包装、标签、仓储、物流、追溯与交易流通要求。' },
+    { code:'09', name:'企业管理与可持续发展', tag:'管理', topics:'生产管理、能耗管理、主设备管理、合规与安全', scope:'覆盖企业生产组织、设备能耗、质量管理、绿色与安全管理。' }
+  ];
+  area.classList.add('standards-page');
+  area.innerHTML = `<section class="standards-intro"><p class="eyebrow">NATURAL RUBBER STANDARDS SYSTEM</p><h3>天然橡胶全产业链标准分类</h3><p>以海南省天然橡胶产业标准体系九大模块为主轴，融合全产业链体系中的割胶、产品质量、检验检测、包装贮运与企业管理分类。</p><div class="standards-meta"><span>9 大分类</span><span>产前 · 产中 · 产后</span><span>支持标准检索</span></div></section><label class="standard-search"><span>⌕</span><input id="standard-search" placeholder="搜索分类、环节或关键词，例如：割胶、标准胶、病虫害" /></label><section id="standards-grid" class="standards-grid">${categories.map((item) => `<button class="standard-category" data-standard-code="${item.code}"><span class="category-code">${item.code}</span><div><div class="category-title"><b>${item.name}</b><em>${item.tag}</em></div><p>${item.topics}</p></div><i>›</i></button>`).join('')}</section><p class="standard-footnote">分类依据：海南省天然橡胶产业标准体系（征求意见稿）及天然橡胶全产业链标准体系发布资料。具体标准号、现行状态、适用范围和文本版本须由合作方或标准数据库导入后展示。</p>`;
+  const grid = area.querySelector('#standards-grid');
+  const openCategory = (category) => openPanel(category.name, `<div class="standard-panel"><span class="panel-tag">${category.tag}</span><h3>覆盖主题</h3><p>${category.topics}</p><h3>分类说明</h3><p>${category.scope}</p><h3>App 接入建议</h3><p>建立“标准名称、标准号、标准级别、状态、发布日期、实施日期、适用范围、全文链接、版本、关键词”的标准主数据。AI 回答只引用已审核且有效的版本。</p><button class="primary-button" data-module-query="请根据${category.name}标准体系说明关键执行要点">向 AI 咨询该分类</button></div>`);
+  grid.querySelectorAll('[data-standard-code]').forEach((button) => button.addEventListener('click', () => {
+    const category = categories.find((item) => item.code === button.dataset.standardCode); const panel = openCategory(category);
+    panel.querySelector('[data-module-query]').addEventListener('click', () => { panel.remove(); go('assistant'); setTimeout(() => { const input = main.querySelector('#chat-text'); input.value = `请根据${category.name}标准体系说明关键执行要点`; input.focus(); }, 0); });
+  }));
+  area.querySelector('#standard-search').addEventListener('input', (event) => {
+    const query = event.target.value.trim().toLowerCase();
+    grid.querySelectorAll('.standard-category').forEach((item) => { item.hidden = !!query && !item.textContent.toLowerCase().includes(query); });
+  });
 }
 
 function openPanel(title, content) {

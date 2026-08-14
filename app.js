@@ -18,6 +18,7 @@ function go(route) {
   if (titles[route]) document.querySelector('#placeholder-title').textContent = titles[route];
   if (titles[route]) setupModule(route);
   if (route === 'assistant') setupChat();
+  if (route === 'home') setupHomeWeather();
   if (route === 'market') setupMarket();
   if (route === 'quality') setupQuality();
   if (route === 'diagnosis') setupDiagnosis();
@@ -86,6 +87,43 @@ function setupMarket() {
   }
   tabs.forEach((tab, index) => tab.addEventListener('click', () => render(index)));
   render(0);
+}
+
+function setupHomeWeather() {
+  const hero = main.querySelector('.hero');
+  const alert = main.querySelector('.alert-card');
+  if (!hero || !alert) return;
+  const update = (data, place = '海口市 · 龙华区') => {
+    const current = data.current || {}; const daily = data.daily || {};
+    const code = Number(current.weather_code); const temp = Math.round(Number(current.temperature_2m));
+    const weather = weatherLabel(code); const sunrise = String(daily.sunrise?.[0] || '').slice(11, 16) || '—';
+    const rain = Number(daily.precipitation_probability_max?.[0] ?? 0);
+    const suggestedFinish = sunrise !== '—' ? shiftMinutes(sunrise, -35) : '日出前 30–40 分钟';
+    hero.innerHTML = `<div><p>${place}</p><h2>${Number.isFinite(temp) ? temp : '—'}° <small>${weather.name}</small></h2><span>日出 ${sunrise} · 割胶建议 ${suggestedFinish} 前完成</span></div><div class="weather-icon">${weather.icon}</div>`;
+    const riskText = rain >= 60 ? `降水概率 ${rain}%：请先巡查割面、胶杯遮雨和排水，避免在潮湿或降雨条件下强行割胶。` : `降水概率 ${rain}%：建议在日出前完成割胶，并结合割面干湿和地块实际情况确认。`;
+    alert.innerHTML = `<span>☀</span><div><b>今日割胶时间建议</b><p>日出 ${sunrise}；一般建议 ${suggestedFinish} 前完成割胶。${riskText}</p><small class="weather-source">数据：实时天气接口 · ${current.time ? String(current.time).slice(11,16) : '刚刚'} 更新</small></div>`;
+  };
+  const fallback = { current:{temperature_2m:28, weather_code:2, time:''}, daily:{sunrise:['2026-08-14T06:21'], precipitation_probability_max:[40]} };
+  update(fallback);
+  const url = 'https://api.open-meteo.com/v1/forecast?latitude=20.03&longitude=110.33&current=temperature_2m,weather_code&daily=sunrise,precipitation_probability_max&timezone=Asia%2FShanghai';
+  fetch(url).then((response) => { if (!response.ok) throw new Error('weather response'); return response.json(); }).then((data) => update(data)).catch(() => {
+    alert.querySelector('.weather-source').textContent = '数据：备用演示数据；实时天气暂不可用';
+  });
+}
+
+function weatherLabel(code) {
+  if (code === 0) return { name:'晴', icon:'☀' };
+  if ([1, 2, 3].includes(code)) return { name:'多云', icon:'⛅' };
+  if ([45, 48].includes(code)) return { name:'雾', icon:'☁' };
+  if ([51, 53, 55, 56, 57].includes(code)) return { name:'毛毛雨', icon:'🌦' };
+  if ([61, 63, 65, 66, 67, 80, 81, 82].includes(code)) return { name:'有雨', icon:'🌧' };
+  if ([95, 96, 99].includes(code)) return { name:'雷雨', icon:'⛈' };
+  return { name:'天气待确认', icon:'☀' };
+}
+
+function shiftMinutes(hhmm, offset) {
+  const [hours, minutes] = hhmm.split(':').map(Number); const total = (hours * 60 + minutes + offset + 1440) % 1440;
+  return `${String(Math.floor(total / 60)).padStart(2, '0')}:${String(total % 60).padStart(2, '0')}`;
 }
 
 function setupQuality() {

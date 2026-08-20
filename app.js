@@ -402,3 +402,148 @@ function setupQuality() {
 setupNotifications();
 navItems.forEach((item) => item.addEventListener('click', () => go(item.dataset.route)));
 go('home');
+
+/* Field-service upgrade: integrates external services honestly, and collects
+   the structured inputs needed for later model/API integration. */
+function ensureFieldServiceStyles() {
+  if (document.querySelector('#field-service-styles')) return;
+  const style = document.createElement('style');
+  style.id = 'field-service-styles';
+  style.textContent = `
+    .field-action-strip{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0 18px}.field-action-strip button,.service-card{border:1px solid #dcebe3;background:#fff;border-radius:15px;color:#174b3d;text-align:left;font:inherit}.field-action-strip button{padding:13px;font-weight:800}.field-action-strip small{display:block;color:#6d847a;font-size:11px;font-weight:500;margin-top:3px}
+    .partner-app-card{display:grid;grid-template-columns:62px 1fr;gap:12px;padding:16px;border-radius:20px;background:linear-gradient(135deg,#075d49,#14a67e);color:#fff;box-shadow:0 13px 30px rgba(10,102,77,.18)}.partner-app-art{width:62px;height:62px;border-radius:19px;background:linear-gradient(145deg,#dff7eb,#a8ead0);display:grid;place-items:center;position:relative;color:#087154;font-size:25px;font-weight:900}.partner-app-art i{position:absolute;right:-5px;bottom:-5px;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;background:#ffd467;color:#845b00;font-style:normal;font-size:12px}.partner-app-card h3{font-size:17px;margin:2px 0}.partner-app-card p:not(.eyebrow){margin:2px 0 0;font-size:12px;line-height:1.5;color:#e0f5ec}.partner-app-card .eyebrow{color:#bce8d8}.partner-open-button{grid-column:1/-1;border:0;border-radius:11px;background:#fff;color:#087154;padding:11px;font-weight:800;font:inherit}.partner-app-card small{grid-column:1/-1;color:#d7f2e7;font-size:10px;line-height:1.45}
+    .service-grid{display:grid;gap:9px;margin-top:15px}.service-card{padding:13px;display:flex;align-items:center;gap:11px}.service-card>span{display:grid;place-items:center;width:34px;height:34px;border-radius:10px;background:#e7f6ed;color:#087557;font-size:20px}.service-card b,.service-card small{display:block}.service-card b{font-size:14px}.service-card small{font-size:11px;color:#70887f;margin-top:2px}.service-card i{margin-left:auto;font-size:23px;color:#91a79e;font-style:normal}
+    .field-form-card{padding:17px;border-radius:19px;background:#fff;box-shadow:0 10px 25px rgba(21,61,49,.08)}.field-form-card h3{margin:0 0 4px}.field-form-card>p{margin:0 0 14px;color:#668077;font-size:12px}.field-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:11px}.field-form-grid label,.field-form-card>label{display:grid;gap:5px;color:#57746a;font-size:12px;font-weight:800}.field-form-card>label{margin-bottom:11px}.field-form-grid input,.field-form-grid select,.field-form-card>label input{width:100%;min-width:0;border:1px solid #d9e7df;border-radius:10px;background:#fff;padding:10px;font:inherit;color:#17362e}.field-form-card .primary-button{margin-top:16px}.form-note{margin-top:11px!important;padding:9px 10px;border-radius:9px;background:#f3f8f5;color:#557067!important;font-size:11px!important;line-height:1.5}.planning-result{margin-top:15px}.planning-result h3{font-size:17px}.planning-result ul{margin:7px 0;padding-left:18px;color:#47695d;font-size:13px}.planning-result li{margin:6px 0}.cut-photo-guide{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px}.cut-photo-guide span{padding:9px 7px;border-radius:10px;background:#f2f8f4;color:#53776a;font-size:11px;text-align:center}.cut-photo-guide b{display:block;color:#0b735b;margin-bottom:3px}
+    .variety-capture{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin:13px 0}.variety-capture article{padding:10px 7px;border-radius:12px;background:#f2f8f4;text-align:center}.variety-capture span{display:grid;place-items:center;width:29px;height:29px;margin:auto;border-radius:9px;background:#def3e7;color:#087557;font-size:17px}.variety-capture b{display:block;font-size:12px;margin:5px 0 1px}.variety-capture small{font-size:10px;color:#718880}.capture-status{margin:11px 0 0;color:#56756a;font-size:12px}.api-readiness{margin-top:13px;padding:12px;border-radius:12px;background:#fff8e9;color:#715b2c;font-size:12px;line-height:1.55}.api-readiness b{color:#86651d}.link-status.success{color:#dffae9}.link-status.error{color:#ffe2db}
+    @media(max-width:360px){.field-form-grid{grid-template-columns:1fr}.partner-app-card{grid-template-columns:52px 1fr}.partner-app-art{width:52px;height:52px}.variety-capture{gap:6px}.variety-capture article{padding:8px 4px}}
+  `;
+  document.head.appendChild(style);
+}
+
+function copyText(value) {
+  if (navigator.clipboard?.writeText) return navigator.clipboard.writeText(value);
+  return new Promise((resolve, reject) => {
+    const input = document.createElement('textarea'); input.value = value; input.style.position = 'fixed'; input.style.opacity = '0';
+    document.body.appendChild(input); input.select();
+    try { document.execCommand('copy') ? resolve() : reject(new Error('copy failed')); } catch (error) { reject(error); }
+    input.remove();
+  });
+}
+
+function setupHomeFieldTools() {
+  if (main.querySelector('.field-action-strip')) return;
+  const alert = main.querySelector('.alert-card');
+  if (!alert) return;
+  const tools = document.createElement('section');
+  tools.className = 'field-action-strip';
+  tools.innerHTML = '<button data-route="cutplan">⌁ 割面规划<small>日出天气 · 拍摄规范 · 作业清单</small></button><button data-route="variety">♧ 品种识别<small>叶片、树皮、树冠多视角采集</small></button>';
+  alert.after(tools);
+}
+
+function setupDiagnosis() {
+  main.innerHTML = `
+    <section class="page-title"><p class="eyebrow">TREE HEALTH SERVICES</p><h2>橡胶树健康诊断</h2><p>病虫害优先由合作小程序识别；营养诊断仅提供通用作物参考。</p></section>
+    <section class="partner-app-card">
+      <div class="partner-app-art" aria-hidden="true"><span>橡</span><i>✦</i></div>
+      <div><p class="eyebrow">WECHAT MINI PROGRAM</p><h3>橡胶卫士 · 病虫害识别</h3><p>用于橡胶树病虫害拍照识别；结论、准确率和后续处置由服务提供方负责。</p></div>
+      <button id="rubber-guard-link" class="partner-open-button">复制“橡胶卫士”小程序链接</button>
+      <small id="rubber-guard-status" class="link-status">网页环境不能可靠地直接唤起微信小程序；复制后请到微信中粘贴并打开。</small>
+    </section>
+    <section class="upload-card"><div id="image-preview" class="image-preview"><span>⌾</span><b>本平台图片采集（预留）</b><p>采集叶片、树干或割面近景，供后续模型接口或专家复核使用</p></div><input id="image-input" type="file" accept="image/*" capture="environment" hidden /><button id="upload-trigger" class="primary-button">拍照或选择图片</button></section>
+    <section id="diagnosis-result" class="result-card"><div class="empty"><span>◌</span><p>图片采集后可送往合作方模型或农技专家复核</p></div></section>
+    <section class="service-grid">
+      <button id="nutrient-reference" class="service-card"><span>⌬</span><div><b>营养与施肥诊断</b><small>通用作物缺素症状参考，非橡胶树专用模型</small></div><i>›</i></button>
+      <button data-route="cutplan" class="service-card"><span>⌁</span><div><b>割面规划</b><small>天气、日出、割面状态与图像采集</small></div><i>›</i></button>
+      <button data-route="variety" class="service-card"><span>♧</span><div><b>橡胶树品种识别</b><small>多视角采集，预留合作方识别接口</small></div><i>›</i></button>
+    </section>
+    <section class="info-card"><b>安全提示</b><p>图片识别与通用营养结论只作田间初筛。药剂、施肥、割胶技术及病情处置，须结合橡胶树专用标准、现场调查和农技专家复核。</p></section>`;
+  const input = main.querySelector('#image-input'); const preview = main.querySelector('#image-preview');
+  main.querySelector('#upload-trigger').addEventListener('click', () => input.click());
+  input.addEventListener('change', () => {
+    const [file] = input.files; if (!file) return;
+    preview.style.backgroundImage = `linear-gradient(rgba(5,80,61,.22),rgba(5,80,61,.22)),url("${URL.createObjectURL(file)}")`;
+    preview.innerHTML = '<b style="color:#fff;text-shadow:0 1px 4px #17362e">图片已采集</b><p style="color:#fff;text-shadow:0 1px 4px #17362e">等待接入模型或提交专家复核</p>';
+    main.querySelector('#diagnosis-result').innerHTML = '<h3>已完成前端采集</h3><p>生产环境应上传图片及拍摄时间、地块、树龄等信息，调用合作方接口后再展示病虫害类别、置信度、风险等级、证据区域和复核状态。</p>';
+  });
+  main.querySelector('#rubber-guard-link').addEventListener('click', async () => {
+    const status = main.querySelector('#rubber-guard-status');
+    try { await copyText('#小程序://橡胶卫士/oMzBBM5lwFMphxa'); status.textContent = '已复制。请切换到微信，在聊天输入框中粘贴后按微信提示打开。'; status.className = 'link-status success'; }
+    catch { status.textContent = '复制失败，请手动复制：#小程序://橡胶卫士/oMzBBM5lwFMphxa'; status.className = 'link-status error'; }
+  });
+  main.querySelector('#nutrient-reference').addEventListener('click', () => openPanel('营养与施肥诊断 · 使用边界', `
+    <p class="panel-note">当前资料来自通用作物缺素症状参考，并非橡胶树专用算法或施肥处方。</p>
+    <div class="indicator-detail"><p><b>可作何种参考：</b>叶片新老部位、是否脉间失绿、叶缘焦枯、畸形和生长受抑等现象，可帮助记录问题并形成补拍清单。</p><p><b>常见区分线索：</b>缺氮多从老叶均匀失绿开始；缺镁以老叶脉间黄化为特征；缺铁常先见于幼叶且叶脉相对保持绿色；缺钾常见老叶叶缘黄化、焦枯。不同作物和病害可能表现相似。</p><p><b>必须补充的数据：</b>橡胶树品系/树龄、叶位、土壤或叶片化验、近期施肥与降雨、病虫害排查和地块位置。</p><p><b>不能直接输出：</b>具体肥料品种、施用量或橡胶树专用处方。需对接合作方的橡胶树营养模型、土壤/叶片检测数据和农艺师审核流程。</p></div>`));
+}
+
+function setupCutPlan() {
+  const area = main.querySelector('.empty-page');
+  area.classList.add('standards-page');
+  area.innerHTML = `
+    <section class="field-form-card"><h3>割面规划与作业窗口</h3><p>结合海口市龙华区日出、降雨风险和现场割面状态生成作业清单，不替代割胶技术规程。</p>
+      <label>地块名称<input id="cut-plot" value="海口市龙华区 · 示范地块 A" maxlength="40" /></label>
+      <div class="field-form-grid"><label>计划作业日<input id="cut-date" type="date" /></label><label>割制<select id="cut-system"><option>S/2 d/2</option><option>S/2 d/3</option><option>S/2 d/4</option><option>其他（需专家确认）</option></select></label><label>割面状态<select id="cut-surface"><option value="dry">干燥，可作业</option><option value="damp">潮湿，待复查</option><option value="wet">明显潮湿/有雨水</option></select></label><label>胶杯遮雨<select id="cut-cover"><option value="yes">已配套并完好</option><option value="no">未配套/待检修</option></select></label></div>
+      <div class="cut-photo-guide"><span><b>1</b>树干全景</span><span><b>2</b>割面近景</span><span><b>3</b>标尺同框</span></div>
+      <button id="make-cut-plan" class="primary-button">生成作业规划清单</button><p id="cut-weather-status" class="form-note">正在读取海口市龙华区的日出与降雨概率…</p>
+    </section><section id="cut-plan-result" class="result-card planning-result"><div class="empty"><span>⌁</span><p>填写现场条件后生成作业窗口与采集清单</p></div></section>
+    <section class="info-card"><b>接入边界</b><p>割线位置、切角、深度和树龄适配，必须依据合作方确认的技术规程、专家标注与图像模型。当前功能只完成作业窗口、风险提示和对接字段。</p></section>`;
+  const date = main.querySelector('#cut-date'); date.value = new Date().toISOString().slice(0,10);
+  let weather = { sunrise:'06:21', rain:40, source:'备用演示数据' };
+  const status = main.querySelector('#cut-weather-status');
+  fetch('https://api.open-meteo.com/v1/forecast?latitude=20.03&longitude=110.33&daily=sunrise,precipitation_probability_max&timezone=Asia%2FShanghai')
+    .then((response) => { if (!response.ok) throw new Error('weather response'); return response.json(); })
+    .then((data) => { weather = { sunrise:String(data.daily?.sunrise?.[0] || '').slice(11,16) || '06:21', rain:Number(data.daily?.precipitation_probability_max?.[0] ?? 0), source:'Open-Meteo 实时天气接口' }; status.textContent = `海口市龙华区：日出 ${weather.sunrise}，降雨概率 ${weather.rain}%（${weather.source}）`; })
+    .catch(() => { status.textContent = `实时天气暂不可用，当前采用备用日出 ${weather.sunrise}、降雨概率 ${weather.rain}%；作业前请核实本地天气。`; });
+  main.querySelector('#make-cut-plan').addEventListener('click', () => {
+    const surface = main.querySelector('#cut-surface').value; const cover = main.querySelector('#cut-cover').value;
+    const latest = shiftMinutes(weather.sunrise, -35); const start = shiftMinutes(weather.sunrise, -100); const plot = escapeHtml(main.querySelector('#cut-plot').value.trim() || '未命名地块');
+    const blocked = surface === 'wet' || weather.rain >= 60;
+    const result = main.querySelector('#cut-plan-result');
+    result.innerHTML = blocked
+      ? `<h3>建议暂缓割胶并复查</h3><ul><li><b>风险依据：</b>降雨概率 ${weather.rain}%${surface === 'wet' ? '，且当前割面明显潮湿' : ''}。</li><li><b>现场动作：</b>检查割面是否完全干燥、胶杯遮雨与排水；避免在雨水污染或割面潮湿条件下强行作业。</li><li><b>复查条件：</b>天气转稳、割面干燥后，再由现场负责人确认开割窗口。</li></ul><p class="result-disclaimer">这是天气与状态规则提醒，不构成对割制、割线、切角或深度的技术指令。</p>`
+      : `<h3>建议作业窗口：${start}–${latest}</h3><ul><li><b>地块：</b>${plot}；<b>割制：</b>${escapeHtml(main.querySelector('#cut-system').value)}。</li><li><b>日出依据：</b>${weather.sunrise}；一般建议在日出前约 35 分钟结束割胶。</li><li><b>开工前：</b>复核割面干燥、胶杯遮雨${cover === 'yes' ? '完好' : '状态，并优先完成检修'}、排水沟与人员防护。</li><li><b>图像采集：</b>按“树干全景、割面近景、标尺同框”留档；为后续割面模型与专家确认提供依据。</li></ul><p class="result-disclaimer">实际割线位置、切角和深度须由橡胶树技术规程、专家审核和已验证模型共同决定。</p>`;
+  });
+}
+
+function setupVariety() {
+  const area = main.querySelector('.empty-page');
+  area.classList.add('standards-page');
+  area.innerHTML = `
+    <section class="field-form-card"><h3>橡胶树品种识别</h3><p>先完成标准化多视角采集；识别结果需要对接合作方现有程序或品种模型。</p>
+      <div class="variety-capture"><article><span>☘</span><b>成熟叶片</b><small>正反面清晰近景</small></article><article><span>▥</span><b>树皮与树干</b><small>含纹理与割面</small></article><article><span>⌁</span><b>树冠全景</b><small>整体长势与冠形</small></article></div>
+      <div class="field-form-grid"><label>地块/区域<input id="variety-place" value="海口市龙华区" maxlength="40" /></label><label>树龄（年）<input id="variety-age" type="number" min="0" max="100" placeholder="例如 8" /></label></div>
+      <input id="variety-images" type="file" accept="image/*" capture="environment" multiple hidden /><button id="variety-upload" class="primary-button">采集品种识别图片</button><p id="variety-status" class="capture-status">建议一次上传至少 3 张：叶片、树皮/割面、树冠各一张。</p><button id="variety-submit" class="minor-button" style="margin-top:10px">生成对接资料包</button>
+      <div class="api-readiness"><b>对接要求：</b>合作方提供现有程序的 HTTPS 接口或微信小程序 URL Link/二维码，并确认可识别的品种清单、置信度阈值、低置信度人工复核规则及品种数据版权归属。</div>
+    </section><section id="variety-result" class="result-card planning-result"><div class="empty"><span>♧</span><p>未调用识别模型，不会虚构品种结果</p></div></section>`;
+  const images = main.querySelector('#variety-images'); const status = main.querySelector('#variety-status');
+  main.querySelector('#variety-upload').addEventListener('click', () => images.click());
+  images.addEventListener('change', () => { const files = [...images.files]; status.textContent = files.length ? `已采集 ${files.length} 张图片：${files.map((file) => escapeHtml(file.name)).join('、')}` : '尚未选择图片'; });
+  main.querySelector('#variety-submit').addEventListener('click', () => {
+    const files = [...images.files]; const result = main.querySelector('#variety-result');
+    if (files.length < 3) { result.innerHTML = '<h3>还需补充多视角图片</h3><p>至少建议提供叶片正反面、树皮/割面和树冠图像。仅靠单张图片容易混淆品种与长势、病害或环境差异。</p>'; return; }
+    result.innerHTML = `<h3>已生成品种识别对接资料包</h3><p>已整理 ${files.length} 张图片、区域“${escapeHtml(main.querySelector('#variety-place').value || '未填写')}”和树龄“${escapeHtml(main.querySelector('#variety-age').value || '未填写')}”。接入模型后应返回：候选品种、置信度、推荐补拍视角、品种特征说明与人工复核状态。</p><p class="result-disclaimer">当前前端不具备品种分类模型，故不展示模拟识别结论；避免将未经验证的品种名用于种植、更新或经营决策。</p>`;
+  });
+}
+
+function go(route) {
+  ensureFieldServiceStyles();
+  main.innerHTML = '';
+  const normalRoutes = ['home', 'market', 'assistant', 'quality', 'diagnosis', 'profile'];
+  main.appendChild(template(normalRoutes.includes(route) ? route : 'placeholder'));
+  setActive(route);
+  const extraTitles = { cutplan:'割面规划', variety:'品种识别' };
+  if (extraTitles[route]) main.querySelector('#placeholder-title').textContent = extraTitles[route];
+  if (route === 'standards') setupStandardsModule();
+  if (route === 'assistant') setupChat();
+  if (route === 'home') { setupHomeWeather(); setupHomeFieldTools(); }
+  if (route === 'market') setupMarket();
+  if (route === 'quality') setupQuality();
+  if (route === 'diagnosis') setupDiagnosis();
+  if (route === 'profile') setupProfileActions();
+  if (route === 'planting' || route === 'trace' || route === 'research' || route === 'processing') setupModule(route);
+  if (route === 'cutplan') setupCutPlan();
+  if (route === 'variety') setupVariety();
+  main.querySelectorAll('[data-route]').forEach((button) => button.addEventListener('click', () => go(button.dataset.route)));
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+go('home');

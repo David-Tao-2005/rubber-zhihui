@@ -7,7 +7,8 @@ function template(id) {
 }
 
 function setActive(route) {
-  navItems.forEach((item) => item.classList.toggle('active', item.dataset.route === route));
+  const activeRoute = route === 'variety' ? 'diagnosis' : route;
+  navItems.forEach((item) => item.classList.toggle('active', item.dataset.route === activeRoute));
 }
 
 function go(route) {
@@ -431,12 +432,15 @@ function copyText(value) {
 }
 
 function setupHomeFieldTools() {
+  main.querySelectorAll('.feature-card[data-route="market"],.feature-card[data-route="diagnosis"]').forEach((card) => card.remove());
   if (main.querySelector('.field-action-strip')) return;
   const alert = main.querySelector('.alert-card');
   if (!alert) return;
   const tools = document.createElement('section');
   tools.className = 'field-action-strip';
   tools.innerHTML = '<button data-route="cutplan">⌁ 割面规划<small>日出天气 · 拍摄规范 · 作业清单</small></button><button data-route="variety">♧ 品种识别<small>叶片、树皮、树冠多视角采集</small></button>';
+  tools.style.gridTemplateColumns = '1fr';
+  tools.innerHTML = '<button data-route="cutplan">⌁ 割面规划<small>日出天气 · 拍摄规范 · 作业清单</small></button>';
   alert.after(tools);
 }
 
@@ -458,6 +462,8 @@ function setupDiagnosis() {
     </section>
     <section class="info-card"><b>安全提示</b><p>图片识别与通用营养结论只作田间初筛。药剂、施肥、割胶技术及病情处置，须结合橡胶树专用标准、现场调查和农技专家复核。</p></section>`;
   const input = main.querySelector('#image-input'); const preview = main.querySelector('#image-preview');
+  main.querySelector('#rubber-guard-image')?.remove();
+  input.removeAttribute('capture');
   main.querySelector('#upload-trigger').addEventListener('click', () => input.click());
   input.addEventListener('change', () => {
     const [file] = input.files; if (!file) return;
@@ -471,7 +477,7 @@ function setupDiagnosis() {
     catch { status.textContent = '复制失败，请手动复制：#小程序://橡胶卫士/oMzBBM5lwFMphxa'; status.className = 'link-status error'; }
   };
   main.querySelector('#rubber-guard-link').addEventListener('click', launchRubberGuard);
-  main.querySelector('#rubber-guard-image').addEventListener('click', launchRubberGuard);
+  main.querySelector('#rubber-guard-image')?.addEventListener('click', launchRubberGuard);
   main.querySelector('#nutrient-reference').addEventListener('click', () => openPanel('营养与施肥诊断 · 使用边界', `
     <p class="panel-note">当前资料来自通用作物缺素症状参考，并非橡胶树专用算法或施肥处方。</p>
     <div class="indicator-detail"><p><b>可作何种参考：</b>叶片新老部位、是否脉间失绿、叶缘焦枯、畸形和生长受抑等现象，可帮助记录问题并形成补拍清单。</p><p><b>常见区分线索：</b>缺氮多从老叶均匀失绿开始；缺镁以老叶脉间黄化为特征；缺铁常先见于幼叶且叶脉相对保持绿色；缺钾常见老叶叶缘黄化、焦枯。不同作物和病害可能表现相似。</p><p><b>必须补充的数据：</b>橡胶树品系/树龄、叶位、土壤或叶片化验、近期施肥与降雨、病虫害排查和地块位置。</p><p><b>不能直接输出：</b>具体肥料品种、施用量或橡胶树专用处方。需对接合作方的橡胶树营养模型、土壤/叶片检测数据和农艺师审核流程。</p></div>`));
@@ -517,6 +523,7 @@ function setupVariety() {
       <div class="api-readiness"><b>对接要求：</b>合作方提供现有程序的 HTTPS 接口或微信小程序 URL Link/二维码，并确认可识别的品种清单、置信度阈值、低置信度人工复核规则及品种数据版权归属。</div>
     </section><section id="variety-result" class="result-card planning-result"><div class="empty"><span>♧</span><p>未调用识别模型，不会虚构品种结果</p></div></section>`;
   const images = main.querySelector('#variety-images'); const status = main.querySelector('#variety-status');
+  images.removeAttribute('capture');
   main.querySelector('#variety-upload').addEventListener('click', () => images.click());
   images.addEventListener('change', () => { const files = [...images.files]; status.textContent = files.length ? `已采集 ${files.length} 张图片：${files.map((file) => escapeHtml(file.name)).join('、')}` : '尚未选择图片'; });
   main.querySelector('#variety-submit').addEventListener('click', () => {
